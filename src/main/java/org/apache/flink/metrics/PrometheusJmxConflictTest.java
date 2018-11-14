@@ -26,12 +26,15 @@ public class PrometheusJmxConflictTest {
     MetricRegistryImpl registry = new MetricRegistryImpl(MetricRegistryConfiguration.fromConfiguration(cfg));
 
     TaskManagerMetricGroup tmMetricGroup = new TaskManagerMetricGroup(registry, "host", "tm");
-    FrontMetricGroup<TaskManagerJobMetricGroup> metricGroup1 = new FrontMetricGroup<>(0, new TaskManagerJobMetricGroup(registry, tmMetricGroup, JobID
-        .generate(), "job_1"));
+    TaskManagerJobMetricGroup tmJMg = new TaskManagerJobMetricGroup(registry, tmMetricGroup, JobID
+        .generate(), "job_1");
+
     Counter metric1 = new SimpleCounter();
 
-    for(MetricReporter reporter: registry.getReporters()) {
-      reporter.notifyOfAddedMetric(metric1, "test", metricGroup1);
+    for (int i = 0; i < registry.getReporters().size(); i++) {
+      MetricReporter reporter = registry.getReporters().get(i);
+      FrontMetricGroup<TaskManagerJobMetricGroup> mGroup = new FrontMetricGroup<>(i, tmJMg);
+      reporter.notifyOfAddedMetric(metric1, "test", mGroup);
     }
   }
 }
